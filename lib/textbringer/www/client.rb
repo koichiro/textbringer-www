@@ -2,6 +2,8 @@ require 'uri'
 require 'open-uri'
 require 'nokogiri'
 
+require_relative 'document'
+
 class Textbringer::Www::Client
   def initialize url
     @uri = URI.parse(url)
@@ -12,7 +14,8 @@ class Textbringer::Www::Client
       f.read
     end
 
-    @doc = Nokogiri::HTML.parse(html, nil, charset)
+    parser = Nokogiri::HTML::SAX::Parser.new(Www::Document.new)
+    @doc = parser.parse_memory(html, charset)
     new_buffer_from_html
   end
 
