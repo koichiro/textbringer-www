@@ -1,4 +1,3 @@
-# coding: utf-8
 require 'uri'
 require 'open-uri'
 require 'nokogiri'
