@@ -1,6 +1,6 @@
 require 'uri'
 require 'open-uri'
-require 'nokogiri'
+require 'oga'
 
 require_relative 'document'
 
@@ -14,8 +14,8 @@ class Textbringer::Www::Client
       f.read
     end
 
-    parser = Nokogiri::HTML::SAX::Parser.new(Www::Document.new)
-    @doc = parser.parse_memory(html, charset)
+    @hander = Www::SaxHander.new
+    Oga.sax_parse_html(@hander, html)
     new_buffer_from_html
   end
 
@@ -23,10 +23,10 @@ class Textbringer::Www::Client
   def new_buffer_from_html
     buffer = Buffer["*Www*"] || Buffer.new_buffer("*Www*", undo_limit: 0)
     buffer.read_only = false
-    buffer.insert(@doc.text)
+    buffer.insert(@hander.text)
     switch_to_buffer(buffer)
     buffer.read_only = true
-    beginning_of_line
+    goto_char(0)
     www_mode
   end
 end
