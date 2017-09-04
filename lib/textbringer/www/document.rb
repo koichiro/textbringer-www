@@ -1,22 +1,37 @@
 class Textbringer::Www::SaxHander
 
   def initialize
+    @title = nil
     @content = []
     @link_attr = {}
+    @body_open = false
+    @tilte_opne = false
 
     @node_on_methods = {
-      "a" => lambda{|name, attrs|
+      "a" => lambda {|name, attrs|
         @link_attr["href"] = attrs["href"]
+      },
+      "body" => lambda {|name, attrs|
+        @body_open = true
+      },
+      "title" => lambda {|name, attrs|
+        @title_open = true
       },
     }
 
     @node_after_methods = {
-      "a" => lambda{|name|
+      "a" => lambda {|name|
         @content << "[#{@link_attr["text"]}](#{@link_attr["href"]})"
         @link_attr["href"] = nil
       },
-      "p" => lambda{|name|
+      "p" => lambda {|name|
         @content << "\n"
+      },
+      "body" => lambda {|name|
+        @body_open = false
+      },
+      "title" => lambda {|name|
+        @tilte_open = false
       },
     }
 
@@ -35,6 +50,8 @@ class Textbringer::Www::SaxHander
   end
 
   def on_text(text)
+    @title = text if @title_open
+    return unless @body_open
     if @link_attr["href"]
       @link_attr["text"] = text
       return
@@ -44,6 +61,9 @@ class Textbringer::Www::SaxHander
   end
 
   def text
-    @content.join.to_s
+    r = ""
+    r = "Title: #{@title}" if @title
+    r += @content.join.to_s
+    r
   end
 end
