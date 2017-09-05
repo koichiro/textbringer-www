@@ -2,7 +2,7 @@ require 'uri'
 require 'open-uri'
 require 'oga'
 
-require_relative 'document'
+require_relative 'sax_handler'
 
 class Textbringer::Www::Client
   def initialize url
@@ -14,7 +14,7 @@ class Textbringer::Www::Client
       f.read
     end
 
-    @hander = Www::SaxHander.new
+    @hander = Www::SaxHandler.new
     Oga.sax_parse_html(@hander, html)
     new_buffer_from_html
   end
