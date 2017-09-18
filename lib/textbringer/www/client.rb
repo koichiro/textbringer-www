@@ -21,7 +21,7 @@ class Textbringer::Www::Client
 
   # TODO: Nokogiri saxパーサーでテキストを組み立てる
   def new_buffer_from_html
-    buffer = Buffer["*Www*"] || Buffer.new_buffer("*Www*", undo_limit: 0)
+    buffer = Buffer["*www*"] || Buffer.new_buffer("*www*", undo_limit: 0)
     buffer.read_only = false
     buffer.insert(@hander.text)
     switch_to_buffer(buffer)
