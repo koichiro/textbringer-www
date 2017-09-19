@@ -17,6 +17,7 @@ class Textbringer::Www::SaxHandlerTest < Minitest::Test
 
     handler = Textbringer::Www::SaxHandler.new
     Oga.sax_parse_html(handler, html)
+    p handler.text
     assert handler.text
   end
 end
