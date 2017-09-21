@@ -15,8 +15,9 @@ class Textbringer::Www::SaxHandlerTest < Minitest::Test
 </html>
     EOS
 
-    handler = Textbringer::Www::SaxHandler.new
-    Oga.sax_parse_html(handler, html)
+    handler = Textbringer::Www::SaxHandler.new(self)
+    handler.sax_parse(html)
+    p handler.stack
     p handler.text
     assert handler.text
   end

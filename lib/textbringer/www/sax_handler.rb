@@ -1,75 +1,43 @@
-require 'statesman'
-
 module Textbringer::Www
-  class HtmlEngine
-    include Statesman::Machine
-
-    state :open
-    state :close, initial: true
-
-    transition from: :open, to: :close
-    transition from: :close, to: :open
-  end
 
   class SaxHandler
+
+    class StackNode < Struct.new(:object, :text)
+      def initialize(object, text = nil)
+        self.object = object
+        self.text = text
+      end
+    end
+                       
     def initialize
-      @title = nil
-      @content = []
-      @link_attr = {}
-      @body_open = false
-      @tilte_opne = false
-
-      @node_on_methods = {
-        "a" => lambda {|name, attrs|
-          @link_attr["href"] = attrs["href"]
-        },
-        "body" => lambda {|name, attrs|
-          @body_open = true
-        },
-        "title" => lambda {|name, attrs|
-          @title_open = true
-        },
-      }
-
-      @node_after_methods = {
-        "a" => lambda {|name|
-          @content << "[#{@link_attr["text"]}](#{@link_attr["href"]})"
-          @link_attr["href"] = nil
-        },
-        "p" => lambda {|name|
-          @content << "\n"
-        },
-        "body" => lambda {|name|
-          @body_open = false
-        },
-        "title" => lambda {|name|
-          @tilte_open = false
-        },
-      }
-
+      @stack = [ StackNode.new("Root") ]
+      @elements []
     end
 
-    def on_element ns, name, attrs={}
-      if @node_on_methods.key?(name)
-        @node_on_methods[name].call(name, attrs)
-      end
-    end
-
-    def after_element ns, name
-      if @node_after_methods.key?(name)
-        @node_after_methods[name].call(name)
-      end
+    def sax_parse(html)
+      Oga.sax_parse_html(self, html)
     end
 
     def on_text(text)
-      @title = text if @title_open
-      return unless @body_open
-      if @link_attr["href"]
-        @link_attr["text"] = text
-        return
+      node = stack.last
+
+      if node.text
+        node.text << text
+      else
+        node.text = text.dup
       end
-      return if text == "\n"
-      @content << text
+    end
+
+    def on_element(ns, name, attrs={})
+      name = node_name(ns, name)
+      stack.push(StackNode.new(name))
+    end
+
+    def after_element ns, name
+      stack.pop
+    end
+
+    def on_text(text)
     end
 
     def text
@@ -77,6 +45,16 @@ module Textbringer::Www
       r = "Title: #{@title}" if @title
       r += @content.join.to_s
       r
+    end
+
+    def stack
+      @stack
+    end
+
+    private
+
+    def node_name(ns, name)
+      ns ? "#{ns}:#{name}" : name
     end
   end
 end
